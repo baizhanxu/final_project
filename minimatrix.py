@@ -31,15 +31,15 @@ class Matrix:
 			 [2 3]]
 	"""
 	def __init__(self, data=None, dim=None, init_value=0):
-		# self.data
-		# self.dim
-		pass
+		self.data = data
+		self.dim = dim
+		
 
 	def shape(self):
 		r"""
 		返回矩阵的形状 dim
 		"""
-		pass
+		return self.dim
 
 	def reshape(self, newdim):
 		r"""
@@ -53,7 +53,13 @@ class Matrix:
 		Returns:
 			Matrix: 一个 Matrix 类型的返回结果, 表示 reshape 得到的结果
 		"""
-		pass
+		if newdim[0] * newdim[1] != self.dim[0] * self.dim[1]: 
+			print('Inapropriate value was assigned to newdim!')
+			raise ValueError
+		row_altogether = (self.data[i][j] for i in range(self.dim[0]) for j in range(self.dim[1]))
+		newdata = [[next(row_altogether) for _ in range(newdim[1])] for _ in range(newdim[0])]
+		newmatrix = Matrix(data=newdata, dim=newdim)
+		return newmatrix
 
 	def dot(self, other):
 		r"""
@@ -72,7 +78,9 @@ class Matrix:
 			>>> [[ 7 10]
 				 [15 22]]
 		"""
-		pass
+		dot_data = [[sum(self.data[i][k] * other.data[k][j] for k in range(self.dim[1])) for j in range(other.dim[1])] for i in range(self.dim[0])]
+		dot_mat = Matrix(data=dot_data, dim=(self.dim[0], other.dim[1]))
+		return dot_mat
 
 	def T(self):
 		r"""
@@ -92,7 +100,9 @@ class Matrix:
 				 [2 5]
 				 [3 6]]
 		"""
-		pass 
+		transpose_data = [[self.data[i][j] for i in range(self.dim[0])] for j in range(self.dim[1])]
+		transpose_mat = Matrix(data=transpose_data, dim=(self.dim[1], self.dim[0]))
+		return transpose_mat
 
 	def sum(self, axis=None): 
 		r"""
@@ -117,7 +127,25 @@ class Matrix:
 			>>> [[6]
 				 [15]]
 		"""
-		pass
+		match axis:
+			case None:
+				return Matrix(
+					data=[[sum(self.data[i][j] for i in range(self.dim[0]) for j in range(self.dim[1]))]]\
+					,dim=(1, 1)
+				  )
+			case 0:
+				return Matrix(
+					data=[[sum(self.data[i][j] for i in range(self.dim[0])) for j in range(self.dim[1])]]\
+					,dim=(1, self.dim[1])
+				)
+			case 1:
+				return Matrix(
+					data=[[sum(self.data[i][j] for j in range(self.dim[1]))] for i in range(self.dim[0])]\
+					,dim=(self.dim[0], 1)
+				)
+			case _:
+				print('Wrong input, which should be in (None, 1, 0)')
+				raise ValueError
 
 	def copy(self):
 		r"""
@@ -126,11 +154,11 @@ class Matrix:
 		Returns:
 			Matrix: 一个self的备份
 		"""
-		pass
+		return Matrix(data=self.data, dim=self.dim)
 
 	def Kronecker_product(self, other):
 		r"""
-		计算两个矩阵的Kronecker积，具体定义可以搜索，https://baike.baidu.com/item/克罗内克积/6282573
+		计算两个矩阵的Kronecker积,具体定义可以搜索,https://baike.baidu.com/item/克罗内克积/6282573
 
 		Args:
 			other: 参与运算的另一个 Matrix
@@ -138,7 +166,10 @@ class Matrix:
 		Returns:
 			Matrix: Kronecke product 的计算结果
 		"""
-		pass
+		Kronecker_data = [[self.data[i][j] * other.data[m][n] for n in range(other.dim[1]) for j in range(self.dim[1])]\
+					for m in range(other.dim[0]) for i in range(self.data[0])]
+		Kronecker_mat = Matrix(data=Kronecker_data, dim=(self.dim[0] * other.dim[0], self.dim[1] * other.dim[1]))
+		return Kronecker_mat
 	
 	def __getitem__(self, key):
 		r"""
@@ -176,6 +207,8 @@ class Matrix:
 				 [8 9]]
 		"""
 		pass
+
+		
 
 	def __setitem__(self, key, value):
 		r"""
@@ -215,7 +248,7 @@ class Matrix:
 
 	def __pow__(self, n):
 		r"""
-		矩阵的n次幂，n为自然数
+		矩阵的n次幂,n为自然数
 		该函数应当不改变 self 的内容
 
 		Args:
@@ -224,7 +257,10 @@ class Matrix:
 		Returns:
 			Matrix: 运算结果
 		"""
-		pass
+		res = self
+		for _ in range(n):
+			res = res.dot(self)
+		return res
 
 	def __add__(self, other):
 		r"""
@@ -237,7 +273,8 @@ class Matrix:
 		Returns:
 			Matrix: 运算结果
 		"""
-		pass
+		add_data = [[self.data[i][j] + other.data[i][j] for j in range(self.dim[1])] for i in self.dim[0]]
+		return Matrix(data=add_data, dim=self.dim)
 
 	def __sub__(self, other):
 		r"""
@@ -287,7 +324,7 @@ class Matrix:
  		 [ 64  81 100 121 144 169 196 225]
  		 [256 289 324 361 400 441 484 529]]
  		的格式将矩阵表示为一个 字符串
- 		！！！ 注意返回值是字符串
+ 		!!! 注意返回值是字符串
 		"""
 		pass
 
@@ -331,7 +368,7 @@ def I(n):
 
 def narray(dim, init_value=1): # dim (,,,,,), init为矩阵元素初始值
 	r"""
-	返回一个matrix，维数为dim，初始值为init_value
+	返回一个matrix,维数为dim,初始值为init_value
 	
 	Args:
 		dim: Tuple[int, int] 表示矩阵形状
