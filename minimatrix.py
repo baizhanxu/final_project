@@ -31,8 +31,11 @@ class Matrix:
 			 [2 3]]
 	"""
 	def __init__(self, data=None, dim=None, init_value=0):
+		if not (data or dim):
+			print('Bad assignment!')
+			raise ValueError 
 		self.data = data
-		self.dim = dim
+		self.dim = (len(data), len(data[0]))
 		
 
 	def shape(self):
@@ -273,7 +276,7 @@ class Matrix:
 		Returns:
 			Matrix: 运算结果
 		"""
-		add_data = [[self.data[i][j] + other.data[i][j] for j in range(self.dim[1])] for i in self.dim[0]]
+		add_data = [[self.data[i][j] + other.data[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
 		return Matrix(data=add_data, dim=self.dim)
 
 	def __sub__(self, other):
@@ -287,7 +290,8 @@ class Matrix:
 		Returns:
 			Matrix: 运算结果
 		"""
-		pass
+		sub_data = [[self.data[i][j] - other.data[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+		return Matrix(data=sub_data, dim=self.dim)
 
 	def __mul__(self, other):
 		r"""
@@ -305,7 +309,8 @@ class Matrix:
 			>>> Matrix(data=[[1, 2]]) * Matrix(data=[[3, 4]])
 			>>> [[3 8]]
 		"""
-		pass
+		mul_data = [[self.data[i][j] * other.data[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+		return Matrix(data=mul_data, dim=self.dim)
 
 
 	def __len__(self):
@@ -315,7 +320,7 @@ class Matrix:
 		Returns:
 			int: 元素数目，即 行数 * 列数
 		"""
-		pass
+		return self.dim[0] * self.dim[1]
 
 	def __str__(self):
 		r"""
@@ -326,7 +331,8 @@ class Matrix:
  		的格式将矩阵表示为一个 字符串
  		!!! 注意返回值是字符串
 		"""
-		pass
+		str_data = '[' + ''.join('[' + ''.join(f'\t{self.data[i][j]}' for j in range(self.dim[1])) + ']\n' for i in range(self.dim[0])) + ']'
+		return str_data
 
 	def det(self):
 		r"""
@@ -337,7 +343,53 @@ class Matrix:
 		Returns:
 			一个 Python int 或者 float, 表示计算结果
 		"""
-		pass
+		def is_upper_triangle(mat_data: list[list[int]]) -> bool:
+			r"""
+			用来判断输入矩阵是否为上三角矩阵,和while搭配使用
+			
+			Returns:
+				True or False
+			"""
+			pass
+		
+		def row_exchange(mat_data: list[list[int]], r1: int, r2: int):
+			r"""
+			交换行列式中的两行,同时exchange记录交换次数
+
+			Returns:
+				exchange += 1
+			"""
+			pass
+		
+		def nonzero_search(mat_data: list[list[int]], column: int) -> int:
+			r"""
+			找到目标列非0的从上往下第一个行标号,如果没有,返回-1
+
+			Returns:
+				the index of the intended row
+			"""
+			pass
+		"""
+		实际上要实现原矩阵经过行初等变换成为阶梯型矩阵
+		"""
+		processing_data = self.data
+		n = self.dim[0]
+		exchange = 0
+		row = 0
+
+		while not (is_upper_triangle(processing_data) or row + 1 > n):
+			nonzero_row = nonzero_search(processing_data)
+			if not (nonzero_row + 1):
+				return 0
+			row_exchange(processing_data, nonzero_row, row)
+			processing_data = [[processing_data[i][j] - (processing_data[i][0] / processing_data[row][0]) * processing_data[row][j] for j in range(n)] for i in range(row + 1, n + 1)]
+			row += 1
+
+		det_mat = (-1) ** exchange 
+		for i in range(self.dim[0]):
+			det_mat *= processing_data[i][i]
+		return det_mat
+		
 
 	def inverse(self):
 		r"""
@@ -365,6 +417,7 @@ def I(n):
 	'''
 	return an n*n unit matrix
 	'''
+	return Matrix(data=[[1 for _ in range(n)] for _ in range(n)])
 
 def narray(dim, init_value=1): # dim (,,,,,), init为矩阵元素初始值
 	r"""
@@ -378,6 +431,7 @@ def narray(dim, init_value=1): # dim (,,,,,), init为矩阵元素初始值
 		Matrix: 一个 Matrix 类型的实例
 	"""
 	#return Matrix(dim, None, init_value)
+	return Matrix(data=[[init_value for _ in range(dim[1])] for _ in range(dim[0])])
 
 def arange(start, end, step):
 	r"""
@@ -391,7 +445,7 @@ def arange(start, end, step):
 	Returns:
 		Matrix: 一个 Matrix 实例
 	"""
-	pass
+	return Matrix(data=[[i for i in range(start, end, step)]])
 
 def zeros(dim):
 	r"""
@@ -403,9 +457,9 @@ def zeros(dim):
 	Returns:
 		Matrix: 一个 Matrix 类型的实例
 	"""
-	pass
+	return narray(dim=dim, init_value=0)
 
-def zeros_like(matrix):
+def zeros_like(matrix: Matrix):
 	r"""
 	返回一个形状和matrix一样 的全0 narray
 
@@ -421,35 +475,36 @@ def zeros_like(matrix):
 		>>> [[0 0 0]
 			 [0 0 0]]
 	"""
-	pass
+	return zeros(matrix.shape())
 
 def ones(dim):
 	r"""
 	返回一个维数为dim 的全1 narray
 	类同 zeros
 	"""
-	pass
+	return narray(dim=dim)
 
-def ones_like(matrix):
+def ones_like(matrix: Matrix):
 	r"""
 	返回一个维数和matrix一样 的全1 narray
 	类同 zeros_like
 	"""
-	pass
+	return narray(matrix.shape())
 
 def nrandom(dim):
 	r"""
 	返回一个维数为dim 的随机 narray
 	参数与返回值类型同 zeros
 	"""
-	pass
+	return Matrix(data=[[random.randint(0, 100) for _ in range(dim[1])] for _ in range(dim[0])])
 
-def nrandom_like(matrix):
+def nrandom_like(matrix: Matrix):
 	r"""
 	返回一个维数和matrix一样 的随机 narray
 	参数与返回值类型同 zeros_like
 	"""
-	pass
+	dim = matrix.shape()
+	return Matrix(data=[[random.randint(0, 100) for _ in range(dim[1])] for _ in range(dim[0])])
 
 def concatenate(items, axis=0):
 	r"""
