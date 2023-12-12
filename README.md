@@ -1,6 +1,6 @@
 # final_project
 A project assigned by CS1602 ~~f**king~~ tasks.
-How time flies! Now freshmen is warmly welcomed by their first finale of a term.
+How time flies! Now freshmen are warmly welcomed by their first finale of a term.
 
 ## Partner Developers
 **Pan Yicheng** and **Bai Zhanxu**
