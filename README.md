@@ -1,5 +1,5 @@
 # final_project
-A project assigned by CS1602 *f**king* tasks.
+A project assigned by CS1602 ~~f**king~~ tasks.
 How time flies! Now freshmen is warmly welcomed by their first finale of a term.
 
 ## Partner Developers
@@ -10,4 +10,4 @@ How time flies! Now freshmen is warmly welcomed by their first finale of a term.
 *main.py*
 (see the repository)
 
-Help *damn* Xiao Ming finish his matrix module.
+Help ~~damn~~ Xiao Ming finish his matrix module:drooling_face:.
