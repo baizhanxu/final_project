@@ -209,7 +209,12 @@ class Matrix:
 				 [4 5]
 				 [8 9]]
 		"""
-		pass
+		a, b = key
+		if type(a) is int:
+			return self.data[a][b]
+		else:
+			slice_data = [row[b] for row in self.data[a]]
+		return Matrix(data=slice_data)
 
 		
 
@@ -247,7 +252,17 @@ class Matrix:
 				 [4 5 1 2]
 				 [8 9 3 4]]
 		"""
-		pass
+		a, b = key
+		if type(a) is int:
+			if type(value) is not int:
+				raise ValueError
+			self.data[a][b] = value
+		else:
+			if type(value) is not Matrix:
+				raise ValueError
+			for i in range(len(value.data)):
+				self.data[a][i][b] = value.data[i]
+		return
 
 	def __pow__(self, n):
 		r"""
@@ -529,8 +544,19 @@ def concatenate(items, axis=0):
 		>>> concatenate((A, B, A), axis=1)
 		>>> [[0 1 2 3 4 5 0 1 2]]
 	"""
-	pass
-
+	if axis == 0:
+		for i in range(len(items) - 1):
+			if items[i].dim[1] != items[i + 1].dim[1]: raise ValueError
+		return Matrix(
+			data=[item.data[i] for item in items for i in range(item.dim[0])]
+		)
+	else:
+		for j in range(len(items) - 1):
+			if items[j].dim[0] != items[j + 1].dim[0]: raise ValueError
+		return Matrix(
+			data=[[items[k].data[m][n] for k in range(len(items)) for n in range(items[k].dim[1])] for m in range(items[0].dim[0])]
+			)
+	
 def vectorize(func):
 	r"""
 	将给定函数进行向量化
@@ -562,7 +588,11 @@ def vectorize(func):
 		>>> [[1, 1]
 			 [2, 2]]
 	"""
-	pass
+	def inner(matrix: Matrix):
+		newdata = [[func(matrix.data[i][j]) for j in range(matrix.dim[1])] for i in range(matrix.dim[0])]
+		return Matrix(data=newdata)
+	return inner
+
 
 
 if __name__ == "__main__":
