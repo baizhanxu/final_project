@@ -2,6 +2,7 @@
 # Fan Cheng, 2022
 
 import random
+import copy
 
 class Matrix:
 	r"""
@@ -31,13 +32,16 @@ class Matrix:
 			 [2 3]]
 	"""
 	def __init__(self, data=None, dim=None, init_value=0):
-		if not (data or dim):
-			print('Bad assignment!')
-			raise ValueError 
-		self.data = data
-		self.dim = (len(data), len(data[0]))
+		if data != None:
+			self.data = data
+			self.dim = tuple((len(data),len(data[0])))
+		else:
+			if dim != None:
+				self.data = [[init_value for _ in range(dim[1])] for _ in range(dim[0])]
+				self.dim = dim
+			else:
+				raise AttributeError
 		
-
 	def shape(self):
 		r"""
 		返回矩阵的形状 dim
@@ -61,7 +65,7 @@ class Matrix:
 			raise ValueError
 		row_altogether = (self.data[i][j] for i in range(self.dim[0]) for j in range(self.dim[1]))
 		newdata = [[next(row_altogether) for _ in range(newdim[1])] for _ in range(newdim[0])]
-		newmatrix = Matrix(data=newdata, dim=newdim)
+		newmatrix = Matrix(data=newdata)
 		return newmatrix
 
 	def dot(self, other):
@@ -82,7 +86,7 @@ class Matrix:
 				 [15 22]]
 		"""
 		dot_data = [[sum(self.data[i][k] * other.data[k][j] for k in range(self.dim[1])) for j in range(other.dim[1])] for i in range(self.dim[0])]
-		dot_mat = Matrix(data=dot_data, dim=(self.dim[0], other.dim[1]))
+		dot_mat = Matrix(data=dot_data)
 		return dot_mat
 
 	def T(self):
@@ -104,7 +108,7 @@ class Matrix:
 				 [3 6]]
 		"""
 		transpose_data = [[self.data[i][j] for i in range(self.dim[0])] for j in range(self.dim[1])]
-		transpose_mat = Matrix(data=transpose_data, dim=(self.dim[1], self.dim[0]))
+		transpose_mat = Matrix(data=transpose_data)
 		return transpose_mat
 
 	def sum(self, axis=None): 
@@ -132,20 +136,11 @@ class Matrix:
 		"""
 		match axis:
 			case None:
-				return Matrix(
-					data=[[sum(self.data[i][j] for i in range(self.dim[0]) for j in range(self.dim[1]))]]\
-					,dim=(1, 1)
-				  )
+				return Matrix(data=[[sum(self.data[i][j] for i in range(self.dim[0]) for j in range(self.dim[1]))]])
 			case 0:
-				return Matrix(
-					data=[[sum(self.data[i][j] for i in range(self.dim[0])) for j in range(self.dim[1])]]\
-					,dim=(1, self.dim[1])
-				)
+				return Matrix(data=[[sum(self.data[i][j] for i in range(self.dim[0])) for j in range(self.dim[1])]])
 			case 1:
-				return Matrix(
-					data=[[sum(self.data[i][j] for j in range(self.dim[1]))] for i in range(self.dim[0])]\
-					,dim=(self.dim[0], 1)
-				)
+				return Matrix(data=[[sum(self.data[i][j] for j in range(self.dim[1]))] for i in range(self.dim[0])])
 			case _:
 				print('Wrong input, which should be in (None, 1, 0)')
 				raise ValueError
@@ -157,7 +152,8 @@ class Matrix:
 		Returns:
 			Matrix: 一个self的备份
 		"""
-		return Matrix(data=self.data, dim=self.dim)
+		matrix_copy = Matrix(data = copy.deepcopy(self.data))
+		return matrix_copy
 
 	def Kronecker_product(self, other):
 		r"""
@@ -170,9 +166,8 @@ class Matrix:
 			Matrix: Kronecke product 的计算结果
 		"""
 		Kronecker_data = [[self.data[i][j] * other.data[m][n] for n in range(other.dim[1]) for j in range(self.dim[1])]\
-					for m in range(other.dim[0]) for i in range(self.data[0])]
-		Kronecker_mat = Matrix(data=Kronecker_data, dim=(self.dim[0] * other.dim[0], self.dim[1] * other.dim[1]))
-		return Kronecker_mat
+					for m in range(other.dim[0]) for i in range(self.dim[0])]
+		return Matrix(data=Kronecker_data)		
 	
 	def __getitem__(self, key):
 		r"""
@@ -215,8 +210,6 @@ class Matrix:
 		else:
 			slice_data = [row[b] for row in self.data[a]]
 		return Matrix(data=slice_data)
-
-		
 
 	def __setitem__(self, key, value):
 		r"""
@@ -292,7 +285,7 @@ class Matrix:
 			Matrix: 运算结果
 		"""
 		add_data = [[self.data[i][j] + other.data[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-		return Matrix(data=add_data, dim=self.dim)
+		return Matrix(data=add_data)
 
 	def __sub__(self, other):
 		r"""
@@ -306,7 +299,7 @@ class Matrix:
 			Matrix: 运算结果
 		"""
 		sub_data = [[self.data[i][j] - other.data[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-		return Matrix(data=sub_data, dim=self.dim)
+		return Matrix(data=sub_data)
 
 	def __mul__(self, other):
 		r"""
@@ -325,8 +318,7 @@ class Matrix:
 			>>> [[3 8]]
 		"""
 		mul_data = [[self.data[i][j] * other.data[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-		return Matrix(data=mul_data, dim=self.dim)
-
+		return Matrix(data=mul_data)
 
 	def __len__(self):
 		r"""
@@ -344,10 +336,75 @@ class Matrix:
  		 [ 64  81 100 121 144 169 196 225]
  		 [256 289 324 361 400 441 484 529]]
  		的格式将矩阵表示为一个 字符串
- 		!!! 注意返回值是字符串
+ 		！！！ 注意返回值是字符串
 		"""
-		str_data = '[' + ''.join('[' + ''.join(f'\t{self.data[i][j]}' for j in range(self.dim[1])) + ']\n' for i in range(self.dim[0])) + ']'
-		return str_data
+		l = max(len(str(self.data[m][n])) for m in range(self.dim[0]) for n in range(self.dim[1]))
+		str_self = [' '.join((' ' * (l - len(str(m))) + str(m)) for m in i) for i in self.data]
+
+		strmatric = '['
+		for m in range(self.dim[0] - 1):
+			strmatric += f'[{str_self[m]}]\n '
+		strmatric += f'[{str_self[self.dim[0] - 1]}]]'
+		return strmatric
+
+	def __Gauss_elimination__(self):
+		r'''
+		不改变原矩阵，通过高斯消元法把矩阵变为阶梯型矩阵，且主元均为 1，同时记录原矩阵的行列式是现在矩阵行列式的多少倍
+		时间复杂度为 n
+		Returns:
+			[Matrix,b]   其中b表示原矩阵的行列式是现在矩阵的 b 倍
+		'''	
+		#接下来先实现矩阵的初等变换
+		def change_rows(matrix,m1,m2):
+			r'''
+			交换 self 的 m1 m2 两行, 无返回值
+			时间复杂度为 1
+			'''
+			matrix.data[m1 - 1],matrix.data[m2 -1] = matrix.data[m2 - 1],matrix.data[m1 - 1]
+
+		def m_row_scalar_multiply_by_k(matrix,m,k):
+			r'''
+			对矩阵第 m 行用 k 进行数乘，无返回值
+			时间复杂度为 n
+			'''
+			for n in range(matrix.dim[1]):
+				matrix.data[m - 1][n] *= k
+
+		def add_k_times_i_row_to_j_row(matrix,k,i,j):
+			r'''
+			把 k 倍的 i 行加到 j 行上，无返回值
+			时间复杂度为 n
+			'''
+			for n in range(matrix.dim[1]):
+				matrix.data[j-1][n] += matrix.data[i-1][n] * k
+					
+		def Gauss_eli_n_column_m_pivot(matrix,n_m,b):
+			r'''
+			先在矩阵第 n(n_m[0]) 列中寻找第 m(n_m[1]) 个主元，若找到则对第 n 行进行消元，同时记录行列式变化的倍数b，消元后 m += 1；若第 n 列全为 0，则只记录 b = 0。无返回值
+			时间复杂度为 n ** 2
+			'''
+			for i in range(n_m[1],matrix.dim[0]+1):
+				if matrix.data[i - 1][n_m[0] - 1] != 0:
+					if i != n_m[0]:
+						b[0] *= (-1)
+					change_rows(matrix,i,n_m[1])
+
+					k = matrix.data[n_m[1] - 1][n_m[0] - 1]
+					m_row_scalar_multiply_by_k(matrix,n_m[1],1/k)
+					b[0] *= k
+
+					for j in range(n_m[1] + 1,matrix.dim[0] + 1):
+						add_k_times_i_row_to_j_row(matrix,-(matrix.data[j-1][n_m[0]-1]),n_m[1],j)
+					n_m[1] += 1
+					break
+			b = 0
+
+		rmatrix = self.copy()
+		n_m,b = [1,1],[1]
+		while n_m[0] <= rmatrix.dim[1]:
+			Gauss_eli_n_column_m_pivot(rmatrix,n_m,b)
+			n_m[0] += 1
+		return [rmatrix,b[0]]
 
 	def det(self):
 		r"""
@@ -358,53 +415,10 @@ class Matrix:
 		Returns:
 			一个 Python int 或者 float, 表示计算结果
 		"""
-		def is_upper_triangle(mat_data: list[list[int]]) -> bool:
-			r"""
-			用来判断输入矩阵是否为上三角矩阵,和while搭配使用
-			
-			Returns:
-				True or False
-			"""
-			pass
+		if self.dim[0] != self.dim[1]:
+			raise ValueError
 		
-		def row_exchange(mat_data: list[list[int]], r1: int, r2: int):
-			r"""
-			交换行列式中的两行,同时exchange记录交换次数
-
-			Returns:
-				exchange += 1
-			"""
-			pass
-		
-		def nonzero_search(mat_data: list[list[int]], column: int) -> int:
-			r"""
-			找到目标列非0的从上往下第一个行标号,如果没有,返回-1
-
-			Returns:
-				the index of the intended row
-			"""
-			pass
-		"""
-		实际上要实现原矩阵经过行初等变换成为阶梯型矩阵
-		"""
-		processing_data = self.data
-		n = self.dim[0]
-		exchange = 0
-		row = 0
-
-		while not (is_upper_triangle(processing_data) or row + 1 > n):
-			nonzero_row = nonzero_search(processing_data)
-			if not (nonzero_row + 1):
-				return 0
-			row_exchange(processing_data, nonzero_row, row)
-			processing_data = [[processing_data[i][j] - (processing_data[i][0] / processing_data[row][0]) * processing_data[row][j] for j in range(n)] for i in range(row + 1, n + 1)]
-			row += 1
-
-		det_mat = (-1) ** exchange 
-		for i in range(self.dim[0]):
-			det_mat *= processing_data[i][i]
-		return det_mat
-		
+		return self.__Gauss_elimination__()[1]
 
 	def inverse(self):
 		r"""
@@ -415,7 +429,31 @@ class Matrix:
 		Returns:
 			Matrix: 一个 Matrix 实例，表示逆矩阵
 		"""
-		pass
+		def add_k_times_i_row_to_j_row(matrix,k,i,j):
+			r'''
+			把 k 倍的 i 行加到 j 行上，无返回值
+			时间复杂度为 n
+			'''
+			for n in range(matrix.dim[1]):
+				matrix.data[j-1][n] += matrix.data[i-1][n] * k
+
+		if self.det() == 0:
+			raise ValueError
+
+		rmat = self.copy()
+		for m in range(rmat.dim[0]):
+			rmat.data[m] += [0] * rmat.dim[1]
+			rmat.data[m][rmat.dim[1] + m] = 1
+
+		rmat.data = rmat.__Gauss_elimination__()[0].data
+		for n in range(self.dim[1],0,-1):
+			for m in range(n-1,0,-1):
+				add_k_times_i_row_to_j_row(rmat,-rmat.data[m-1][n-1],n,m)
+		
+		for m in range(rmat.dim[0]):
+			rmat.data[m] = rmat.data[m][self.dim[1]:]
+
+		return rmat
 
 	def rank(self):
 		r"""
@@ -426,7 +464,18 @@ class Matrix:
 		Returns:
 			一个 Python int 表示计算结果
 		"""
-		pass
+		def if_not_all_zeros(row):
+			for i in range(len(row)):
+				if row[i] != 0:
+					return True
+			return False
+				
+		rmatrix = self.__Gauss_elimination__()[0]
+		r = 0
+		for m in range(rmatrix.dim[0]):
+			if if_not_all_zeros(rmatrix.data[m]):
+				r += 1
+		return r
 
 def I(n):
 	'''
@@ -593,8 +642,5 @@ def vectorize(func):
 		return Matrix(data=newdata)
 	return inner
 
-
-
 if __name__ == "__main__":
 	print("test here")
-	pass
